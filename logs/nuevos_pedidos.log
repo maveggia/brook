@@ -1,0 +1,10 @@
+Nuevo Pedido Recibido - 100:
+[
+  {
+    "title": "Rock",
+    "unit_price": 25,
+    "currency_id": "ARS",
+    "quantity": 1
+  }
+]
+

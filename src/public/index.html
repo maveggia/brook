@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brook Buenos Aires - Tienda de Remeras</title>
+    <link rel="stylesheet" href="estilos.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script async src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Brook Buenos Aires</h1>
+        <a href="https://wa.me/541127505683" target="_blank" class="whatsapp-icon-container">
+            <img src="img/wsp.png" alt="Contactar por WhatsApp" class="whatsapp-icon">
+        </a>
+        <a href="https://www.instagram.com/brook.bsas" target="_blank">
+            <img src="img/ig.png" alt="Instagram" class="instagram-logo">
+        </a>
+        <p>Tienda de Remeras</p>
+        <nav>
+            <ul>
+                <li><a href="index.html">Productos</a></li>
+            </ul>
+        </nav>
+    </header>
+    <div id="producto-agregado-leyenda" class="leyenda"></div>
+    <section id="productos">
+    </section>
+    <section id="carrito">
+        <h2>Carrito</h2>
+        <ul id="lista-carrito"></ul>
+        <h3><p id="total">Total: $0</p></h3>
+        <div id="metodo-envio">
+            <h3>Selecciona el método de envío:</h3>
+            <select id="select-envio" required>
+                <option value="" disabled selected hidden>Selecciona una opción</option>
+                <option value="encomienda">Encomienda Clásica $6000 (3 a 6 días hábiles)</option>
+                <option value="motomensajeria">Motomensajería CABA $4000 (1 a 2 días hábiles)</option>
+                <option value="retiro">Retiro en local $0 (1 día hábil)</option>
+            </select>
+        </div>
+
+        <div id="form-encomienda" class="form-envio" style="display: none;">
+            <h3>Datos para Encomienda Clásica</h3>
+            <form>
+                <label for="nombreEncomienda">Nombre y apellido:</label>
+                <input type="text" id="nombreEncomienda" required placeholder="Ingresa tu nombre y apellido">
+
+                <label for="dniEncomienda">DNI:</label>
+                <input type="text" id="dniEncomienda" required placeholder="Ingresa tu DNI">
+
+                <label for="direccionEncomienda">Dirección:</label>
+                <input type="text" id="direccionEncomienda" required placeholder="Ingresa tu dirección">
+
+                <label for="entreCallesEncomienda">Entre calles:</label>
+                <input type="text" id="entreCallesEncomienda" required placeholder="Ingresa las entre calles">
+
+                <label for="cpEncomienda">Código postal:</label>
+                <input type="text" id="cpEncomienda" required placeholder="Ingresa tu CP">
+
+                <label for="celularEncomienda">Celular:</label>
+                <input type="text" id="celularEncomienda" required placeholder="Ingresa un número de contacto">
+            </form>
+        </div>
+
+        <div id="form-motomensajeria" class="form-envio" style="display: none;">
+            <h3>Datos para Motomensajería</h3>
+            <form>
+                <label for="nombreMotomensajeria">Nombre y apellido:</label>
+                <input type="text" id="nombreMotomensajeria" required placeholder="Ingresa tu nombre y apellido">
+
+                <label for="dniMotomensajeria">DNI:</label>
+                <input type="text" id="dniMotomensajeria" required placeholder="Ingresa tu DNI">
+
+                <label for="direccionMotomensajeria">Dirección:</label>
+                <input type="text" id="direccionMotomensajeria" required placeholder="Ingresa tu dirección">
+
+                <label for="entreCallesMotomensajeria">Entre calles:</label>
+                <input type="text" id="entreCallesMotomensajeria" required placeholder="Ingresa las entre calles">
+
+                <label for="cpMotomensajeria">Código postal:</label>
+                <input type="text" id="cpMotomensajeria" required placeholder="Ingresa tu CP">
+
+                <label for="celularMotomensajeria">Celular:</label>
+                <input type="text" id="celularMotomensajeria" required placeholder="Ingresa un número de contacto">
+            </form>
+        </div>
+
+        <div id="form-retiro" class="form-envio" style="display: none;">
+            <h3>Datos para Retiro en local</h3>
+            <b><p>Dirección: Fernandez 217, CABA</p></b>
+            <b><p>Horario: 09 a 18 hs</p></b>
+            <b><p>Podes retirar tu pedido un (1) día hábil después de haber hecho tu compra.</p></b>
+            <form>
+                <label for="celularRetiro">Celular:</label>
+                <input type="text" id="celularRetiro" required placeholder="Ingresa un número de contacto">
+                <div id="map" style="height: 300px; width: 100%;"></div>
+                <script>
+                    var map = L.map('map').setView([-34.63776819565659, -58.485645450827384], 15);
+                  
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                      attribution: '&copy; OpenStreetMap contributors'
+                    }).addTo(map);
+                  
+                    L.marker([-34.63776819565659, -58.485645450827384]).addTo(map)
+                      .bindPopup('Brook Buenos Aires')
+                      .openPopup();
+                </script>
+            </form>
+        </div>
+
+        <button id="confirmar-pedido" class="confirmar-pedido">Confirmar Pedido</button>
+        <button id="carrito-btn" class="carrito-btn"><img src="img/carrito.png" alt="Carrito de compras" class="carrito-img"></button>
+    </section>
+    <script src="main.js"></script>
+    <script>
+        function setupInputRestrictions(inputElement, pattern, errorMessage) {
+            inputElement.addEventListener('input', function () {
+                const inputValue = this.value;
+                if (!pattern.test(inputValue)) {
+                    this.setCustomValidity(errorMessage);
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+        }
+
+        // VALIDACIONES ENCOMIENDA
+        const nombreEncomienda = document.getElementById('nombreEncomienda');
+        setupInputRestrictions(nombreEncomienda, /^[A-Za-z\s]+$/, 'Error. En "Nombre y apellido" ingresa solo valores alfabéticos');
+
+        const dniEncomienda = document.getElementById('dniEncomienda');
+        setupInputRestrictions(dniEncomienda, /^\d+$/, 'Error. En "DNI" ingresa solo valores numéricos');
+
+        const direccionEncomienda = document.getElementById('direccionEncomienda');
+        setupInputRestrictions(direccionEncomienda, /^[A-Za-z0-9\s]+$/, 'Error. En "Dirección" ingresa solo valores alfanuméricos');
+
+        const entreCallesEncomienda = document.getElementById('entreCallesEncomienda');
+        setupInputRestrictions(entreCallesEncomienda, /^[A-Za-z\s]+$/, 'Error. En "Entre calles" ingresa solo valores alfabéticos');
+
+        const cpEncomienda = document.getElementById('cpEncomienda');
+        setupInputRestrictions(cpEncomienda, /^\d+$/, 'Error. En "Codigo postal" ingresa solo valores numéricos');
+
+        const celularEncomienda = document.getElementById('celularEncomienda');
+        setupInputRestrictions(celularEncomienda, /^\d+$/, 'Error. En "Celular" ingresa solo valores numéricos');
+
+        // VALIDACIONES MOTOMENSAJERIA
+        const nombreMotomensajeria = document.getElementById('nombreMotomensajeria');
+        setupInputRestrictions(nombreMotomensajeria, /^[A-Za-z\s]+$/, 'Error. En "Nombre y apellido" ingresa solo valores alfabéticos');
+
+        const dniMotomensajeria = document.getElementById('dniMotomensajeria');
+        setupInputRestrictions(dniMotomensajeria, /^\d+$/, 'Error. En "DNI" ingresa solo valores numéricos');
+
+        const direccionMotomensajeria = document.getElementById('direccionMotomensajeria');
+        setupInputRestrictions(direccionMotomensajeria, /^[A-Za-z0-9\s]+$/, 'Error. En "Dirección" ingresa solo valores alfanuméricos');
+
+        const entreCallesMotomensajeria = document.getElementById('entreCallesMotomensajeria');
+        setupInputRestrictions(entreCallesMotomensajeria, /^[A-Za-z\s]+$/, 'Error. En "Entre calles" ingresa solo valores alfabéticos');
+
+        const cpMotomensajeria = document.getElementById('cpMotomensajeria');
+        setupInputRestrictions(cpMotomensajeria, /^\d+$/, 'Error. En "Codigo postal" ingresa solo valores numéricos');
+
+        const celularMotomensajeria = document.getElementById('celularMotomensajeria');
+        setupInputRestrictions(celularMotomensajeria, /^\d+$/, 'Error. En "Celular" ingresa solo valores numéricos');
+
+        //VALIDACION RETIRO EN LOCAL
+        const celularRetiro = document.getElementById('celularRetiro');
+        setupInputRestrictions(celularRetiro, /^\d+$/, 'Error. En "Celular" ingresa solo valores numéricos');
+
+        const confirmarPedidoButton = document.getElementById("confirmar-pedido");
+        const selectEnvio = document.getElementById("select-envio");
+
+        selectEnvio.addEventListener("change", () => {
+            const forms = document.querySelectorAll(".form-envio");
+            forms.forEach(form => form.style.display = "none");
+
+            const selectedFormId = "form-" + selectEnvio.value;
+            const selectedForm = document.getElementById(selectedFormId);
+            if (selectedForm) {
+                selectedForm.style.display = "block";
+            }
+        });
+
+        confirmarPedidoButton.addEventListener("click", () => {
+            if (selectEnvio.value === "") {
+                alert("Debes seleccionar un método de envío.");
+                return;
+            }
+
+            const selectedForm = document.querySelector(".form-envio[style='display: block;']");
+            const requiredInputs = selectedForm.querySelectorAll("input[required]");
+
+            for (const input of requiredInputs) {
+                if (!input.checkValidity()) {
+                    alert(input.validationMessage);
+                    return;
+                }
+            }
+            // CODIGO para confirmar pedido y sincr logica server
+            confirmarPedido();
+        });
+
+        function confirmarPedido() {
+            // AGREGAR LOGICA PARA CONFIRMARCION DE PEDIDO
+            // ENVIAR SOLICITUD A SV PARA PROCESAR ORDEN
+        }
+        function obtenerCostoEnvio(envioSeleccionado) {
+            const costosEnvio = {
+                'encomienda': 6000,
+                'motomensajeria': 4000,
+                'retiro': 0
+            };
+
+            return costosEnvio[envioSeleccionado] || 0;
+        }
+    </script>
+</body>
+</html>
