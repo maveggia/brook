@@ -49,14 +49,14 @@ document.addEventListener('DOMContentLoaded', function () {
         const producto = document.createElement('article');
         producto.classList.add('producto');
         producto.dataset.nombre = nombreOriginal;
-        producto.dataset.precio = '25';
+        producto.dataset.precio = '8500';
         const tallaId = `talla${i}-${nombreOriginal.toLowerCase()}`;
         producto.innerHTML = `
             <div class="imagen-container">
                 <div class="imagen" style="background-image: url('img/${nombreOriginal.toLowerCase()}.jpg')"></div>
             </div>
             <h2>${nombreParaUsuario}</h2>
-            <p>Precio: $25</p>
+            <p>Precio: $8500</p>
             <p>Detalles: Manga Corta</p>
             <div class="selector-tallas">
                 <label for="${tallaId}">Talla:</label>
@@ -72,9 +72,9 @@ document.addEventListener('DOMContentLoaded', function () {
         if (agregarCarritoBtn) {
             agregarCarritoBtn.addEventListener('click', function () {
                 agregarAlCarrito(agregarCarritoBtn);
+            });
+        }
     });
-}
-});
 
     const selectEnvio = document.getElementById('select-envio');
     const listaCarrito = document.getElementById('lista-carrito');
@@ -103,34 +103,56 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     confirmarPedidoBtn.addEventListener('click', async () => {
+        const alertasAnteriores = document.querySelectorAll('.alerta-envio');
+        alertasAnteriores.forEach(alerta => alerta.remove());
+    
         if (selectEnvio.value === "") {
-            alert("Debes seleccionar un método de envío.");
+            const alertaEspecifico = document.createElement('div');
+            alertaEspecifico.classList.add('alerta-envio');
+            alertaEspecifico.textContent = "Debes seleccionar un método de envío.";
             return;
         }
-
         const selectedForm = document.querySelector(".form-envio[style='display: block;']");
-        const requiredInputs = selectedForm.querySelectorAll("input[required]");
-
-        for (const input of requiredInputs) {
-            if (!input.checkValidity()) {
-                alert(input.validationMessage);
+        
+        if (selectedForm) {
+            const requiredInputs = selectedForm.querySelectorAll("input[required]");
+    
+            let hayErrores = false;
+    
+            for (const input of requiredInputs) {
+                if (!input.checkValidity()) {
+                    const alertaGeneral = document.createElement('div');
+                    alertaGeneral.textContent = "Completa este campo.";
+                    hayErrores = true;
+                }
+            }
+    
+            if (hayErrores) {
                 return;
             }
         }
-
         try {
             if (carrito.length === 0) {
                 mostrarAlertaCarritoVacio();
                 return;
             }
-
+            const datosFormulario = {
+                nombre: document.getElementById('nombreEncomienda').value,
+                dni: document.getElementById('dniEncomienda').value,
+                direccion: document.getElementById('direccionEncomienda').value,
+                entreCalles: document.getElementById('entreCallesEncomienda').value,
+                cp: document.getElementById('cpEncomienda').value,
+                celular: document.getElementById('celularEncomienda').value,
+                correoElectronico: document.getElementById('emailEncomienda').value
+            };
+            
             const productosEnCarrito = carrito.map(item => ({
                 title: item.nombre,
                 unit_price: item.precio,
                 currency_id: "ARS",
                 quantity: item.cantidad,
             }));
-
+    
             const res = await fetch("http://localhost:3000/create-order", {
                 method: "POST",
                 headers: {
@@ -138,12 +160,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
                 body: JSON.stringify({ items: productosEnCarrito }),
             });
-
+    
             if (res.ok) {
                 const data = await res.json();
-
+    
                 if (data.init_point) {
-                    // REDIRIGE A USUARIO USANDO INIT
                     window.location.href = data.init_point;
                 } else {
                     console.error("Init_point not found in response");
@@ -168,8 +189,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 return 'Encomienda Clásica';
             case 'motomensajeria':
                 return 'Envío Motomensajería';
-            case 'retiro':
-                return 'Retiro en Local';
             default:
                 return 'Envío';
         }
@@ -177,7 +196,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function agregarAlCarrito(button) {
         const producto = button.closest('.producto');
-        const nombre = producto.dataset.nombre;
+        const nombreOriginal = producto.dataset.nombre; 
+        const nombre = obtenerNombreParaUsuario(nombreOriginal); 
         mostrarLeyenda('Producto agregado');
         const precio = Number(producto.dataset.precio);
         const talla = obtenerTallaSeleccionada(producto);
@@ -245,7 +265,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 quitarBtn.classList.add('quitar-producto');
             } else {
                 quitarBtn.classList.add('quitar-envio');
-                quitarBtn.style.display = 'none';  // OCULTA BOTON QUITAR PARA ENVIOS
+                quitarBtn.style.display = 'none'; 
             }
     
             quitarBtn.textContent = 'Quitar';

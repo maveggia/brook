@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Brook Buenos Aires - Tienda de Remeras</title>
+    <link rel="icon" href="img/favicon.png" type="image/png">
     <link rel="stylesheet" href="estilos.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script async src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
@@ -17,18 +18,11 @@
         <a href="https://www.instagram.com/brook.bsas" target="_blank">
             <img src="img/ig.png" alt="Instagram" class="instagram-logo">
         </a>
-        <p>Tienda de Remeras</p>
-        <nav>
-            <ul>
-                <li><a href="index.html">Productos</a></li>
-            </ul>
-        </nav>
     </header>
     <div id="producto-agregado-leyenda" class="leyenda"></div>
     <section id="productos">
     </section>
     <section id="carrito">
-        <h2>Carrito</h2>
         <ul id="lista-carrito"></ul>
         <h3><p id="total">Total: $0</p></h3>
         <div id="metodo-envio">
@@ -37,7 +31,6 @@
                 <option value="" disabled selected hidden>Selecciona una opción</option>
                 <option value="encomienda">Encomienda Clásica $6000 (3 a 6 días hábiles)</option>
                 <option value="motomensajeria">Motomensajería CABA $4000 (1 a 2 días hábiles)</option>
-                <option value="retiro">Retiro en local $0 (1 día hábil)</option>
             </select>
         </div>
 
@@ -61,6 +54,9 @@
 
                 <label for="celularEncomienda">Celular:</label>
                 <input type="text" id="celularEncomienda" required placeholder="Ingresa un número de contacto">
+                
+                <label for="emailEncomienda">Correo electrónico:</label>
+                <input type="email" id="emailEncomienda" required placeholder="Ingresa tu correo electrónico">
             </form>
         </div>
 
@@ -84,29 +80,11 @@
 
                 <label for="celularMotomensajeria">Celular:</label>
                 <input type="text" id="celularMotomensajeria" required placeholder="Ingresa un número de contacto">
+                
+                <label for="emailMotomensajeria">Correo electrónico:</label>
+                <input type="email" id="emailMotomensajeria" required placeholder="Ingresa tu correo electrónico">
             </form>
         </div>
-
-        <div id="form-retiro" class="form-envio" style="display: none;">
-            <h3>Datos para Retiro en local</h3>
-            <b><p>Dirección: Fernandez 217, CABA</p></b>
-            <b><p>Horario: 09 a 18 hs</p></b>
-            <b><p>Podes retirar tu pedido un (1) día hábil después de haber hecho tu compra.</p></b>
-            <form>
-                <label for="celularRetiro">Celular:</label>
-                <input type="text" id="celularRetiro" required placeholder="Ingresa un número de contacto">
-                <div id="map" style="height: 300px; width: 100%;"></div>
-                <script>
-                    var map = L.map('map').setView([-34.63776819565659, -58.485645450827384], 15);
-                  
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                      attribution: '&copy; OpenStreetMap contributors'
-                    }).addTo(map);
-                  
-                    L.marker([-34.63776819565659, -58.485645450827384]).addTo(map)
-                      .bindPopup('Brook Buenos Aires')
-                      .openPopup();
-                </script>
             </form>
         </div>
 
@@ -114,6 +92,33 @@
         <button id="carrito-btn" class="carrito-btn"><img src="img/carrito.png" alt="Carrito de compras" class="carrito-img"></button>
     </section>
     <script src="main.js"></script>
+    <script>
+
+function confirmarPedido() {
+    const selectedForm = document.querySelector(".form-envio[style='display: block;'] form");
+    const formData = new FormData(selectedForm);
+
+    fetch('/create-order', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Error al confirmar el pedido');
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Pedido confirmado:', data);
+        alert('¡Pedido confirmado!');
+    })
+    .catch(error => {
+        console.error('Error al confirmar el pedido:', error);
+        alert('Ocurrió un error al confirmar el pedido. Por favor, inténtalo de nuevo.');
+    });
+}
+
+    </script>
     <script>
         function setupInputRestrictions(inputElement, pattern, errorMessage) {
             inputElement.addEventListener('input', function () {
@@ -126,47 +131,61 @@
             });
         }
 
-        // VALIDACIONES ENCOMIENDA
-        const nombreEncomienda = document.getElementById('nombreEncomienda');
-        setupInputRestrictions(nombreEncomienda, /^[A-Za-z\s]+$/, 'Error. En "Nombre y apellido" ingresa solo valores alfabéticos');
+// VALIDACIONES ENCOMIENDA
+const nombreEncomienda = document.getElementById('nombreEncomienda');
+setupInputRestrictions(nombreEncomienda, /^[A-Za-z\s]+$/, 'Error. En "Nombre y apellido" ingresa solo valores alfabéticos');
+nombreEncomienda.name = 'nombreEncomienda';
 
-        const dniEncomienda = document.getElementById('dniEncomienda');
-        setupInputRestrictions(dniEncomienda, /^\d+$/, 'Error. En "DNI" ingresa solo valores numéricos');
+const dniEncomienda = document.getElementById('dniEncomienda');
+setupInputRestrictions(dniEncomienda, /^\d+$/, 'Error. En "DNI" ingresa solo valores numéricos');
+dniEncomienda.name = 'dniEncomienda';
 
-        const direccionEncomienda = document.getElementById('direccionEncomienda');
-        setupInputRestrictions(direccionEncomienda, /^[A-Za-z0-9\s]+$/, 'Error. En "Dirección" ingresa solo valores alfanuméricos');
+const direccionEncomienda = document.getElementById('direccionEncomienda');
+setupInputRestrictions(direccionEncomienda, /^[A-Za-z0-9\s]+$/, 'Error. En "Dirección" ingresa solo valores alfanuméricos');
+direccionEncomienda.name = 'direccionEncomienda';
 
-        const entreCallesEncomienda = document.getElementById('entreCallesEncomienda');
-        setupInputRestrictions(entreCallesEncomienda, /^[A-Za-z\s]+$/, 'Error. En "Entre calles" ingresa solo valores alfabéticos');
+const entreCallesEncomienda = document.getElementById('entreCallesEncomienda');
+setupInputRestrictions(entreCallesEncomienda, /^[A-Za-z\s]+$/, 'Error. En "Entre calles" ingresa solo valores alfabéticos');
+entreCallesEncomienda.name = 'entreCallesEncomienda';
 
-        const cpEncomienda = document.getElementById('cpEncomienda');
-        setupInputRestrictions(cpEncomienda, /^\d+$/, 'Error. En "Codigo postal" ingresa solo valores numéricos');
+const cpEncomienda = document.getElementById('cpEncomienda');
+setupInputRestrictions(cpEncomienda, /^\d+$/, 'Error. En "Codigo postal" ingresa solo valores numéricos');
+cpEncomienda.name = 'cpEncomienda';
 
-        const celularEncomienda = document.getElementById('celularEncomienda');
-        setupInputRestrictions(celularEncomienda, /^\d+$/, 'Error. En "Celular" ingresa solo valores numéricos');
+const celularEncomienda = document.getElementById('celularEncomienda');
+setupInputRestrictions(celularEncomienda, /^\d+$/, 'Error. En "Celular" ingresa solo valores numéricos');
+celularEncomienda.name = 'celularEncomienda';
 
-        // VALIDACIONES MOTOMENSAJERIA
-        const nombreMotomensajeria = document.getElementById('nombreMotomensajeria');
-        setupInputRestrictions(nombreMotomensajeria, /^[A-Za-z\s]+$/, 'Error. En "Nombre y apellido" ingresa solo valores alfabéticos');
+const emailEncomienda = document.getElementById('emailEncomienda');
+emailEncomienda.name = 'emailEncomienda';
 
-        const dniMotomensajeria = document.getElementById('dniMotomensajeria');
-        setupInputRestrictions(dniMotomensajeria, /^\d+$/, 'Error. En "DNI" ingresa solo valores numéricos');
+// VALIDACIONES MOTOMENSAJERIA
+const nombreMotomensajeria = document.getElementById('nombreMotomensajeria');
+setupInputRestrictions(nombreMotomensajeria, /^[A-Za-z\s]+$/, 'Error. En "Nombre y apellido" ingresa solo valores alfabéticos');
+nombreMotomensajeria.name = 'nombreMotomensajeria';
 
-        const direccionMotomensajeria = document.getElementById('direccionMotomensajeria');
-        setupInputRestrictions(direccionMotomensajeria, /^[A-Za-z0-9\s]+$/, 'Error. En "Dirección" ingresa solo valores alfanuméricos');
+const dniMotomensajeria = document.getElementById('dniMotomensajeria');
+setupInputRestrictions(dniMotomensajeria, /^\d+$/, 'Error. En "DNI" ingresa solo valores numéricos');
+dniMotomensajeria.name = 'dniMotomensajeria';
 
-        const entreCallesMotomensajeria = document.getElementById('entreCallesMotomensajeria');
-        setupInputRestrictions(entreCallesMotomensajeria, /^[A-Za-z\s]+$/, 'Error. En "Entre calles" ingresa solo valores alfabéticos');
+const direccionMotomensajeria = document.getElementById('direccionMotomensajeria');
+setupInputRestrictions(direccionMotomensajeria, /^[A-Za-z0-9\s]+$/, 'Error. En "Dirección" ingresa solo valores alfanuméricos');
+direccionMotomensajeria.name = 'direccionMotomensajeria';
 
-        const cpMotomensajeria = document.getElementById('cpMotomensajeria');
-        setupInputRestrictions(cpMotomensajeria, /^\d+$/, 'Error. En "Codigo postal" ingresa solo valores numéricos');
+const entreCallesMotomensajeria = document.getElementById('entreCallesMotomensajeria');
+setupInputRestrictions(entreCallesMotomensajeria, /^[A-Za-z\s]+$/, 'Error. En "Entre calles" ingresa solo valores alfabéticos');
+entreCallesMotomensajeria.name = 'entreCallesMotomensajeria';
 
-        const celularMotomensajeria = document.getElementById('celularMotomensajeria');
-        setupInputRestrictions(celularMotomensajeria, /^\d+$/, 'Error. En "Celular" ingresa solo valores numéricos');
+const cpMotomensajeria = document.getElementById('cpMotomensajeria');
+setupInputRestrictions(cpMotomensajeria, /^\d+$/, 'Error. En "Codigo postal" ingresa solo valores numéricos');
+cpMotomensajeria.name = 'cpMotomensajeria';
 
-        //VALIDACION RETIRO EN LOCAL
-        const celularRetiro = document.getElementById('celularRetiro');
-        setupInputRestrictions(celularRetiro, /^\d+$/, 'Error. En "Celular" ingresa solo valores numéricos');
+const celularMotomensajeria = document.getElementById('celularMotomensajeria');
+setupInputRestrictions(celularMotomensajeria, /^\d+$/, 'Error. En "Celular" ingresa solo valores numéricos');
+celularMotomensajeria.name = 'celularMotomensajeria';
+
+const emailMotomensajeria = document.getElementById('emailMotomensajeria');
+emailMotomensajeria.name = 'emailMotomensajeria';
 
         const confirmarPedidoButton = document.getElementById("confirmar-pedido");
         const selectEnvio = document.getElementById("select-envio");
@@ -197,19 +216,15 @@
                     return;
                 }
             }
-            // CODIGO para confirmar pedido y sincr logica server
             confirmarPedido();
         });
 
         function confirmarPedido() {
-            // AGREGAR LOGICA PARA CONFIRMARCION DE PEDIDO
-            // ENVIAR SOLICITUD A SV PARA PROCESAR ORDEN
         }
         function obtenerCostoEnvio(envioSeleccionado) {
             const costosEnvio = {
                 'encomienda': 6000,
                 'motomensajeria': 4000,
-                'retiro': 0
             };
 
             return costosEnvio[envioSeleccionado] || 0;
